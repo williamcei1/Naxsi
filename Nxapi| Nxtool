@@ -1,0 +1,189 @@
+https://github.com/nbs-system/naxsi/tree/master/nxapi
+
+- Um breve comentário
+
+nxapi/nxtool é a nova ferramenta de aprendizagem, que tenta fazer o seguinte:
+
+	* Events import : Importing naxsi events into an elasticsearch database
+	* Geração de Whitelist: Gerar Whitelist, a partir de modelos em vez de aspectos puramente estatísticos.
+	* Gerenciamento do Evento: Permitir a marcação de eventos em banco de dados para excluí-los do processo ""wl gen"" -{rever tradução};
+	* Relatando: Exibe informações sobre o conteúdo atual do banco de dados.
+
+Modelo, introduzido em nxapi é um arquivo que contém um dicionário JSON, usado por nxapi para tentar uma geração de whitelist. Os modelos podem ser genérico ou específico da aplicação.
+						{ "zone" : "HEADERS", "var_name" : "cookie", "id" : "?"} 
+
+
+Por outro lado, este é um modelo específico da aplicação:
+
+
+						{ "zone" : "ARGS", "var_name" : "redirect_to", "_statics" : { "id" : "1100,1101"}, "_msg" : "WP post-auth redirect" }
+
+
+
+- Arquivo de Configuração: nxapi.json
+
+usa um arquivo JSON para suas configurações, tais como:
+
+$ cat nxapi.json 
+
+- simples Método de uso 
+Checklist
+
+	* Your ElasticSearch instance is up & running
+	* Seu banco de dados está em execução, e já existe alguns dados dentro: curl -XPOST "http://ELASTICSEARCH/nxapi/events/_search?pretty" -d '{}'
+
+1. Obter informações sobre o banco de dados
+
+$ nxtool.py -x --colors
+
+Emitirá um resumo do conteúdo do banco de dados, incluindo:
+
+
+	* Relação ente eventos marcados/não marcados
+
+Marcação de eventos é uma noção importante que lhe permite saber o quão bem você está fazendo na aprendizagem. Digamos que você acabou de começar a sua aprendizagem. Você vai ter uma relação de tag de 0%, o que significa que você não escreveu nenhum listas brancas para eventos recentes. Uma vez que você começar a gerar listas brancas, você pode fornecer-os (-w /tmp/wl.cf --tag) e nxapi vai marcar esses eventos no banco de dados como lista branca, excluindo-os de futuros geração de processos. Ele permite que você acelerar o processo de geração, mas principalmente saber o quão bem você lidou com recentes falsos positivos.
+
+Você pode também usar o mecanismo de marcação para excluir padrões de ataque para aprendizagem. Se X.Y.Z.W continua martelando o meu site e poluindo o meu log, posso fornecer ao nxapi com este ip (-i /tmp/ips.txt --tag) para marcá-los e excluí-los do processo.
+
+	* Principais servidores. Uma lista TOP10 de hosts dst levantando o maior número de exceções.
+	* Top URI (s). Uma lista TOP10 de dst URIs levantando o maior número de exceções. É muito útil em combinação com - filtro para gerar listas 	brancas para URI (s) específico.
+	* Principais zonas. Lista das mais ativas zonas de exceções.
+
+2. Gerando WhiteList
+
+Digamos que eu tive o seguinte resultado:
+
+Eu quero gerar WLS para x1.fr, por isso vou obter estatísticas mais precisas em primeiro lugar:
+
+Então vou tentar gerar listas brancas para a página /foo/bar/teste, que parece provocar a maioria dos eventos: Tome nota do --filter option, que me permite trabalhar listas brancas somente para este URI. Os filtros podem especificar qualquer campo: var_name, zone, uri, id, whitelisted, content, date ... No entanto, tome cuidado, eles não suportam regexp ainda. Tome nota também de --slack usage, que permite ignorar critérios de sucesso/alerta, como o meu site tem poucos visitantes, faz com que exceções legítimas apareçam como falsos positivos.
+
+nxtool tenta fornecer informações adicionais para permitir ao usuário decidir se é um falso positivo:
+
+	* Conteúdo: O conteúdo HTTP atual, presente apenas se naxsi_extensive_log é definido como 1
+	* uri: Exemplo (s) de uri em que o evento foi disparado
+	* var_name: Exemplo (s) de nomes de variáveis ??em que o conteúdo foi acionado
+	* sucesso e avisos: nxapi informará fornecer-lhe informações de pontuação (ver "notas").
+
+
+3. Marcando Eventos 
+
+Depois eu escolhi as whitelist apropriadas, vou anotá-las em um arquivo de whitelist. Então, eu posso marcar eventos correspondentes.
+
+: nxtool.py -c nxapi.json -w /tmp/whitelist.conf --tag
+
+And then, if I look at the report again, I will see a bump in the tagged ratio of events. Once the ratio is high enough or the most active URLs & IPs are false positives, it's done ! --{traduzir};
+
+- Dicas e truques de geração WL
+
+	* --filter
+
+--filter é seu amigo, especialmente se você tem um monte de exceções. Ao estreitar o campo de pesquisa para whitelist, ele vai aumentar a velocidade e reduzir os falsos positivos.
+
+	* Use -t em vez de -f
+
+-f é o modo de geração "mudo", onde será testada todos os modelos. se você fornecer algo como-t "ARGS / *" somente modelos específicos para ARGS de WhiteList será testada.
+
+	* Crie seus próprios modelos
+
+Se você gerenciar aplicativos que compartilham código/framework/tecnologia, você vai rapidamente encontrar-se gerando a mesma wl novamente. Pare com isso! Escreva seus próprios modelos, melhorando o tempo de geração, precisão e redução de falsos positivos. Deixe-me dar um exemplo prático: eu estou lidando com o Magento, gosto muito. Um dos padrões recorrentes é o pedido de "página única", então eu criei modelos específicos:
+
+{
+"_success" : { "rule_ip" : [ ">", "1"]},
+    "_msg" : "Magento checkout page (BODY|NAME)",
+    "?uri" : "/checkout/onepage/.*",
+    "zone" : "BODY|NAME",
+    "id" : "1310 OR 1311"}
+
+- Opções Suportadas
+
+- Opções de escopo/filtragem:
+
+-s SERVER, --server=SERVER
+
+Permite restringir o âmbito da geração de whitelist ou exibir estatísticas para FQDN específico
+
+--filter=FILTER
+
+Um filtro (na forma de um dicionário) para fundir-se com modelos/filtros existentes: '{"uri" : "/foobar", "zone" : "BODY"}'.
+
+- Opções de geração de Whitelist
+
+-t TEMPLATE, --template=TEMPLATE
+
+Considerando um caminho para um modelo de arquivo, tentar gerar combinações de listas brancas. Possíveis listas brancas serão testados contra banco de dados, apenas aqueles com "bons" resultados serão mantidos. Se o MODELO iniciar com uma '/' ela é tratada como um caminho absoluto. Caso contrário, ele sera expandido a partir do diretório tpl/.
+
+-f, --full-auto
+
+Tentativas de geração de whitelist para todos os modelos presente em rules_path.
+
+--slack
+
+Define NXTOOL para ignorar pontuações e exibir todas as listas brancas geradas.
+
+- opções de Marcação
+
+-w WL_FILE, --whitelist-path=WL_FILE
+
+Considerando um arquivo WL, encontra eventos correspondente no banco de dados.
+
+-i IPS, --ip-path=IPS
+
+Considerando uma lista de ips (separados por \n), encontra eventos correspondente no banco de dados.
+
+--tag
+
+Realiza a marcação atual. Se não for especificado, os eventos correspondentes são simplesmente exibidos.
+
+
+- Opções de geração de estatísticas
+
+-x, --stats
+
+Gera estatísticas sobre o conteúdo do db atual.
+
+- Importando dados
+
+Nota: Todos as aquisições de recursos espera o conteúdo do naxsi EXLOG/FMT.
+
+--files=FILES_IN Path to log files to parse.`
+
+Suporta glob, gz bz2, ie. --files "/var/log/nginx/mysite.com*error.log"
+
+--fifo=FIFO_IN Caminho para um FIFO a ser criado e lido. [infinite] Cria um FIFO, aumenta F_SETPIPE_SZ e lê nele. Muito útil para ler diretamente a partir de syslog/nginx logs.
+
+--stdin Read from stdin.
+
+`--no-timeout Desabilita tempo limite em operações de leitura (stdin/fifo).`
+
+- Entendendo modelos
+
+Modelos têm um papel fundamental dentro nxapi. Por padrão, somente os genéricos são fornecidos, mas você deve criar o seu. Vamos primeiro olhar para um genérico para entender como ele funciona:
+{
+  "zone" : "HEADERS",
+  "var_name" : "cookie",
+  "id" : "?"}
+
+
+Veja como NXTOOL vai usar isso para gerar listas brancas:
+
+
+
+1. extrair global_filters de nxapi.json, e criar o filtro ES de base: { "whitelisted" : "false" }
+2. fundir base do filtro ES com fornecimento de filtro de linha cmd (--filter) { "whitelisted" : "false", "server" : "www.x1.fr" }
+3. Para cada campo estático do modelo, mesclá-lo na base do filtro ES: { "whitelisted" : "false", "server" : "www.x1.fr", "zone" : "HEADERS", "var_name" : "cookie" }
+4. Para cada campo a ser expandido (o valor é?): 4.1. selecionar todos os valores possíveis para este campo (id) correspondência de filtro ES base, (ou seja, 1000 e 1001 aqui) 4.2. tentar gerar uma lista branca para cada valor possível, e avaliar suas pontuações. { "whitelisted" : "false", "server" : "www.x1.fr", "zone" : "HEADERS", "var_name" : "cookie", "id" : "1000"} { "whitelisted" : "false", "server" : "www.x1.fr", "zone" : "HEADERS", "var_name" : "cookie", "id" : "1001"}
+
+5. Para cada conjunto final que forneceu resultados, uma saída de whitelist.
+
+
+Modelo de Suporte:
+
+	* "field" : "value": Um valor estático que deve estar presente no modelo de exceção para ser verdadeiro.
+	* "field" : "?": Um valor que deve ser expandido a partir do conteúdo do banco de dados (casando filtros estáticos e globais). valores 	    	   exclusivos para "campo" será, então, usado para geração de whitelist (lista branca por um valor único).
+	* "?field" : "regexp" Uma expressão regular para um campo de conteúdo que será pesquisado na banco de dados. valores exclusivos correspondendo 	   	   regexp para "campo" será, então, usado para geração de whitelist (lista branca por um valor único).
+	* "_statics" : { "field" : "value" } : Um valor estático para ser usado no momento da geração whitelist. Não é preciso participar de processo de 	  pesquisa, apenas em tempo de 'output'. isto é, "_statics" : { "id" : "0" } é a única maneira de ter um outputing uma whitelist.
+	* "_msg" : "string" uma mensagem de texto para ajudar o usuário a entender o propósito do modelo.
+	* "_success" : { ... } : A dict fornecido para substituir/completar regras "globais" de pontuação.
+	* "_warnings" : { ... } : A dict fornecido para substituir/completar regras "globais" de pontuação.
+
+Mecanismo de pontuação: TBD.
