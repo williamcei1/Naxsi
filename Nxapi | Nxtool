@@ -1,6 +1,6 @@
 https://github.com/nbs-system/naxsi/tree/master/nxapi
 
-- Um breve comentário
+<a name="user-content-a-quick-word" class="anchor" href="#a-quick-word"><span class="octicon octicon-link"></span></a>Um breve comentário</h1>
 
 nxapi/nxtool é a nova ferramenta de aprendizagem, que tenta fazer o seguinte:
 
@@ -16,7 +16,7 @@ Modelo, introduzido em nxapi é um arquivo que contém um dicionário JSON, usad
 Por outro lado, este é um modelo específico da aplicação:
 
 
-						{ "zone" : "ARGS", "var_name" : "redirect_to", "_statics" : { "id" : "1100,1101"}, "_msg" : "WP post-auth redirect" }
+<pre>{ "zone" : "ARGS", "var_name" : "redirect_to", "_statics" : { "id" : "1100,1101"}, "_msg" : "WP post-auth redirect" }</pre>
 
 
 
