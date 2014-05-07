@@ -2,7 +2,7 @@ https://github.com/nbs-system/naxsi/tree/master/nxapi
 
 Um breve comentário
 
-nxapi/nxtool é a nova ferramenta de aprendizagem, que tenta fazer o seguinte:
+<b>nxapi/nxtool é a nova ferramenta de aprendizagem, que tenta fazer o seguinte:
 
 	* Events import : Importing naxsi events into an elasticsearch database
 	* Geração de Whitelist: Gerar Whitelist, a partir de modelos em vez de aspectos puramente estatísticos.
