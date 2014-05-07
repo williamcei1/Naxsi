@@ -1,10 +1,9 @@
 https://github.com/nbs-system/naxsi/blob/master/README.md
 
-- Precisamos de sua ajuda
+##Precisamos de sua ajuda
 
 Por favor, preencha este pequeno questionário de feedback, 2 minutos de seu tempo será de grande ajuda para nós!
-
-- O que é o Naxsi?
+##O que é o Naxsi?
 
 NAXSI significa Nginx Anti Xss e SQL Injection
 
@@ -21,7 +20,7 @@ gerar automaticamente regras WhiteList relativas ao comportamento do website.
 Em resumo, Naxsi se comporta como um DROP padrão de firewall, o único trabalho necessário é adicionar regras exigidas 
 ACCEPT  para o site de destino para funcionar corretamente.
 
-- Por que é diferente?
+##Por que é diferente?
 
 Ao contrário de muitos Firewall de Aplicação Web, Naxsi não depende de uma base de assinatura, como um antivírus e, 
 portanto,não pode ser contornado por um padrão de ataque "desconhecido". Outra principal diferença entre Naxsi e outros 
@@ -29,18 +28,18 @@ WAF, Naxsi filtra requisições Get & Posts e é OpenSource e de uso livre para 
 (ou seja: enquanto você não revender um produto ou serviço baseado em Naxsi aos clientes).
 
 
-- Introdução
+##Introdução
 
 Wiki
 
 Veja a wiki
 
-- Avaliações de Desempenho
+##Avaliações de Desempenho
 
 	*Veja como Naxsi desempenha contra um site extremamente vulnerável
 	*Veja como Naxsi desempenha vs Ofusca | padrões complexos de SQLI
 
-- Precisamos de você!
+##Precisamos de você!
 
 	*Performance, teste de estabilidade: estamos procurando por opiniões independentes, pontos de referência e feedback 
 	relacionado.
