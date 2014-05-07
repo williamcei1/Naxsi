@@ -4,7 +4,7 @@ Um breve comentário
 
 <b>nxapi/nxtool é a nova ferramenta de aprendizagem, que tenta fazer o seguinte:
 
-	* Events import : Importing naxsi events into an elasticsearch database
+	* Events import : Importar eventos do Naxsi em um banco de dados elasticsearch
 	* Geração de Whitelist: Gerar Whitelist, a partir de modelos em vez de aspectos puramente estatísticos.
 	* Gerenciamento do Evento: Permitir a marcação de eventos em banco de dados para excluí-los do processo ""wl gen""
 	-{rever tradução};
@@ -29,7 +29,7 @@ usa um arquivo JSON para suas configurações, tais como:
 
 $ cat nxapi.json 
 
-- simples Método de uso Checklist
+- Simples Método de uso Checklist:
 
 	* Your ElasticSearch instance is up & running
 	* Seu banco de dados está em execução, e já existe alguns dados dentro: curl -XPOST 
