@@ -1,10 +1,5 @@
 https://github.com/nbs-system/naxsi/blob/master/README.md
 
-##Precisamos de sua ajuda
-
-<p>
-Por favor, preencha este pequeno questionário de feedback, 2 minutos de seu tempo será de grande ajuda para nós!
-</p>
 ##O que é o Naxsi?
 
 NAXSI significa Nginx Anti Xss e SQL Injection
